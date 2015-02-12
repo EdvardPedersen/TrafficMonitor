@@ -26,8 +26,8 @@ class Image():
 		(f,h) = ur.urlretrieve(self.url)
 		self.image = pygame.image.load(f)
 		if(self.proc_image):
-			pimg = cv2.adaptiveThreshold(cv2.cvtColor(cv2.imread(f)[530:670,800:1200], cv2.COLOR_BGR2GRAY), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 5, 10)
-			sift = cv2.SURF(HESSIAN)
+			pimg = cv2.cvtColor(cv2.imread(f)[530:670,800:1200], cv2.COLOR_BGR2GRAY)
+			sift = cv2.BRISK(60)
 			self.keypoints = sift.detect(pimg)
 			cv2.imwrite('sift_keypoints.jpg', cv2.drawKeypoints(pimg, self.keypoints))
 			self.im_proc = pygame.image.load('sift_keypoints.jpg')
@@ -38,6 +38,7 @@ class Image():
 class Monitor:
 	def __init__(self):
 		pygame.display.init()
+		pygame.init()
 		# CONFIG
 		self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
 		self.running = True
@@ -45,6 +46,7 @@ class Monitor:
 		self.timer = 0
 		self.wcs = Image("http://weather.cs.uit.no/cam/cam_east.jpg", True)
 		self.vvs = Image("http://webkamera.vegvesen.no/kamera?id=674473", False)
+		self.font = pygame.font.SysFont("Times", 30)
 		
 	
 	def _load_config(self):
@@ -57,6 +59,7 @@ class Monitor:
 
 	def run(self):
 		while self.running:
+			self.screen.fill(pygame.Color("black"))
 			# CONFIG
 			self.clock.tick(10)
 			self.timer += 1
@@ -68,6 +71,8 @@ class Monitor:
 			self.screen.blit(self.wcs.image, (20,20))
 			self.screen.blit(self.wcs.im_proc, (WIDTH-self.wcs.im_proc.get_width()-20, 20))
 			self.screen.blit(self.vvs.image, (20,600))
+			text = self.font.render("Traffic level " + str(len(self.wcs.keypoints)), True, (min(255, len(self.wcs.keypoints)*5), 0,0))
+			self.screen.blit(text, (WIDTH-400, 200))
 			self.screen.fill(pygame.Color("blue"), pygame.Rect((1400, 300), (100, len(self.wcs.keypoints)*10)))
 			pygame.display.flip()
 
