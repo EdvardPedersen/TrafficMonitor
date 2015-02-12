@@ -74,6 +74,7 @@ class Image():
 	def get_image(self):
 		(f,h) = ur.urlretrieve(self.url)
 		self.image = pygame.image.load(f)
+		self.image = self.image.convert()
 		if(self.proc_image):
 			pimg = cv2.cvtColor(cv2.imread(f)[530:670,800:1200], cv2.COLOR_BGR2GRAY)
 			sift = cv2.BRISK(60)
