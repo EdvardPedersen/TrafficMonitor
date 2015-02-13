@@ -97,7 +97,7 @@ class Monitor:
 		self.loggertimer = 0
 		self.wcs = Image("http://weather.cs.uit.no/cam/cam_east.jpg", True)
 		self.vvs = Image("http://webkamera.vegvesen.no/kamera?id=674473", False)
-		self.font = pygame.font.SysFont("Times", 30)
+		self.font = pygame.font.SysFont("Times", HEIGHT/40)
 		self.logger = DataLogger(300, 5)
 		
 	
@@ -121,16 +121,16 @@ class Monitor:
 				self.update_images()
 				self.timer = 0
 			self.handle_events()
-			self.screen.blit(self.wcs.image, (20,20))
-			self.screen.blit(self.wcs.im_proc, (WIDTH-self.wcs.im_proc.get_width()-20, 20))
-			self.screen.blit(self.vvs.image, (20,600))
-			text = self.font.render("Traffic level " + str(len(self.wcs.keypoints)), True, (min(255, len(self.wcs.keypoints)*5), 0,0))
-			self.screen.blit(text, (WIDTH-400, 200))
+			self.screen.blit(self.wcs.image, (0,0))
+			self.screen.blit(self.wcs.im_proc, (WIDTH-self.wcs.im_proc.get_width()-0, 0))
+			self.screen.blit(self.vvs.image, (0,HEIGHT/2))
+			text = self.font.render("Traffic level " + str(len(self.wcs.keypoints)), True, (255, 155,0))
+			self.screen.blit(text, (WIDTH-WIDTH/4, WIDTH/8))
 			pygame.draw.circle(self.screen, (255,0,0) , (17*(WIDTH/20),HEIGHT/3), len(self.wcs.keypoints))
 			if(self.loggertimer == 600):
 				self.logger.add_point(len(self.wcs.keypoints))
 				self.loggertimer = 0
-			self.screen.blit(self.logger.draw_image(), (WIDTH-400, HEIGHT-400))
+			self.screen.blit(self.logger.draw_image(), (WIDTH-WIDTH/4, HEIGHT-WIDTH/4))
 			pygame.display.flip()
 
 	def update_images(self):
