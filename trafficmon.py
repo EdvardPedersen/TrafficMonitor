@@ -24,7 +24,7 @@ class DataLogger:
 		if len(self.datapoints) > self.limit:
 			self.datapoints.pop(0)
 		if(len(self.datapoints) > self.window_size):
-			average = sum(self.datapoints[:self.window_size])/self.window_size
+			average = sum(self.datapoints[-self.window_size:])/self.window_size
 			self.average.append(average)
 		if len(self.average) > self.limit - self.window_size:
 			self.average.pop(0)
