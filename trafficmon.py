@@ -65,6 +65,8 @@ class Image():
 		self.im_proc = False
 		self.keypoints = 0
 		self.proc_image = process
+		self.prev_image = False
+		self.cur_image = False
 		self.update()
 
 	def update(self):
@@ -76,10 +78,17 @@ class Image():
 		self.image = pygame.image.load(f)
 		self.image = self.image.convert()
 		if(self.proc_image):
-			pimg = cv2.cvtColor(cv2.imread(f)[530:670,800:1200], cv2.COLOR_BGR2GRAY)
-			sift = cv2.BRISK(60)
-			self.keypoints = sift.detect(pimg)
-			cv2.imwrite('sift_keypoints.jpg', cv2.drawKeypoints(pimg, self.keypoints))
+			if(isinstance(self.cur_image, numpy.ndarray)):
+				self.prev_image = self.cur_image
+			self.cur_image = cv2.cvtColor(cv2.imread(f)[530:670,800:1200], cv2.COLOR_BGR2GRAY)
+			if((self.cur_image==self.prev_image).all()):
+				return
+			diffImg = self.cur_image
+			if(isinstance(self.cur_image, numpy.ndarray) and isinstance(self.prev_image,numpy.ndarray)):
+				diffImg = cv2.absdiff(self.cur_image, self.prev_image)
+			sift = cv2.BRISK(20)
+			self.keypoints = sift.detect(diffImg)
+			cv2.imwrite('sift_keypoints.jpg', cv2.drawKeypoints(diffImg, self.keypoints))
 			self.im_proc = pygame.image.load('sift_keypoints.jpg')
 			print("Keypoints: " + str(len(self.keypoints)))
 			
@@ -138,7 +147,7 @@ class Monitor:
 			self.wcs.update()
 			self.vvs.update()
 		except:
-			pass
+			print("Error updating images, retrying...")
 			
 		
 
