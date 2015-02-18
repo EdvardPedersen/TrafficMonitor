@@ -80,7 +80,7 @@ class Image():
 		if(self.proc_image):
 			if(isinstance(self.cur_image, numpy.ndarray)):
 				self.prev_image = self.cur_image
-			self.cur_image = cv2.cvtColor(cv2.imread(f)[530:670,800:1200], cv2.COLOR_BGR2GRAY)
+			self.cur_image = cv2.equalizeHist(cv2.cvtColor(cv2.imread(f)[500:670,800:1200], cv2.COLOR_BGR2GRAY))
 			if((self.cur_image==self.prev_image).all()):
 				return
 			diffImg = self.cur_image
