@@ -86,7 +86,8 @@ class Image():
 			diffImg = self.cur_image
 			if(isinstance(self.cur_image, numpy.ndarray) and isinstance(self.prev_image,numpy.ndarray)):
 				diffImg = cv2.absdiff(self.cur_image, self.prev_image)
-			sift = cv2.BRISK(20)
+			sift = cv2.BRISK(30)
+			(retval, diffImg) = cv2.threshold(diffImg, 50, 255, cv2.THRESH_TOZERO)
 			self.keypoints = sift.detect(diffImg)
 			cv2.imwrite('sift_keypoints.jpg', cv2.drawKeypoints(diffImg, self.keypoints))
 			self.im_proc = pygame.image.load('sift_keypoints.jpg')
