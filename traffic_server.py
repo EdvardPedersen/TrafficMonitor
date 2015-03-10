@@ -1,16 +1,21 @@
-import flask
-import trafficmonitor_service as tf
+from flask import Flask, request, render_template
+import trafficmon_service as tf
 import argparse
+import imp
 
 def serve_web():
 	traffic = tf.Manager()
 	serv = Flask("Test web server")
 	
-	@serv.route('/user/<user_id>')
-	def 
+	@serv.route('/test')
+	def test_tf():
+		return traffic.test()
+
+	serv.run()
+	
 
 if __name__ == "__main__":
-	parser = argparse.ArugmentParser(description="TrafficMonitor web service")
+	parser = argparse.ArgumentParser(description="TrafficMonitor web service")
 	args = parser.parse_args()
 
-
+	serve_web()

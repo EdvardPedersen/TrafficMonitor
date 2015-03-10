@@ -101,10 +101,11 @@ class TrafficAlg(Algorithm):
 		return diff_image
 
 class Manager():
-	def __init__(self, filename=False):
+	def __init__(self, filename="default"):
 		self.users = dict()
 		self.cameras = dict()
 		self.algorithms = list()
+		self.filename=filename
 		if(filename):
 			self._loadfromfile(filename)
 		
@@ -112,8 +113,14 @@ class Manager():
 	def _load_from_file(filename):
 		print("STUB: Loading user data from disk")
 
+	def _save_to_file():
+		
+
 	def _register_algs(self):
 		print ("STUB: Registering algorithms")
+
+	def test(self):
+		return "Testing Manager"
 
 if __name__ == "__main__":
 	user = User("Edvard")
