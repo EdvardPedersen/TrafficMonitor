@@ -1,0 +1,29 @@
+<!doctype html>
+<title>Traffic monitor</title>
+
+{% if session %}
+
+Hello {{session.username}}<br>
+
+<a href="cams">View all cameras</a>
+<a href="users">View all users</a>
+
+<a href="register">Register a new camera</a>
+<a href="subscribe">Subscribe to more cameras</a>
+<a href="logout">Log out</a> <br>
+
+{% else %}
+
+<form method="GET">
+<input type="" name="username">Please enter your name</input>
+</form>
+
+{% endif %}
+
+{% for user in users %}
+	Hello {{ user.user_id }}!
+{% endfor %}
+
+{% for cam in cameras %}
+	Camera <img src={{ url_for('static', filename = cameras[cam].path) }}>
+{% endfor %}

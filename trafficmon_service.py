@@ -1,48 +1,64 @@
 import pygame
-import xml.etree.ElementTree as et
+import json
 import cv2
 import numpy as np
 import urllib as ur
 import random
 import time
+from algorithm_factory import Factory as algFac
+import gdbm as dbm
+import pickle
+import os
 
 class User:
 	def __init__(self, uid):
 		self.user_id = uid
-		self.cameras = dict()
-		self.cam_len = 0
+		self.cameras = list()
+		
+	def add_cameras(self, cams):
+		self.cameras = cams
 
 	def register_camera(self, cam):
-		self.cameras[self.cam_len] = cam
-		self.cam_len += 1
-		return self.cam_len - 1 
+		if(cam not in self.cameras):
+			self.cameras.append(cam)
+		return cam
 
-	def register_algorithm(self, cid, algorithm):
-		self.cameras[cid].set_algorithm(algorithm)
-
-	def get_camera(self, cid):
-		return self.cameras[cid].get_image()
-
-	def update(self, force=False):
-		for (cid, cam) in self.cameras.items():
-			print("CID: " + str(cid) + " CAM" + str(cam))
-			if(time.time() - cam.last_updated > cam.update_interval or force):
-				cam.update()
+	def get_cameras(self):
+		return self.cameras
 
 class Camera:
-	def __init__(self, url, interval=0.0, prev_image=False):
-		self.subset = False
-		self.image = False
+	def __init__(self, name=None, url=None, interval=0.0, prev_image=False, dbm_input=None):
+		if(dbm_input != None):
+			self.init_dbm(dbm_input)
+		else:
+			self.subset = False
+			self.name = name
+			self.url = url
+			self.alg = algFac.get_alg("none")
 
 		self.update_interval = interval
+		self.image = False
 		self.prev_image = prev_image
-		self.url = url
-
 		self.last_updated = time.time()
-		self.alg = Algorithm()
-
+		self.path = ""
 		self.update()
+		
+	def init_dbm(self, dbm_repr):
+		self.name = dbm_repr["name"]
+		self.subset = dbm_repr["subset"]
+		self.url = dbm_repr["url"]
+		self.update_interval = dbm_repr["interval"]
+		self.alg = algFac.get_alg(dbm_repr["algorithm"])
+		
 
+	def get_dbm(self):
+		json_repr = dict()
+		json_repr["name"] = self.name
+		json_repr["subset"] = self.subset
+		json_repr["url"] = self.url
+		json_repr["interval"] = self.update_interval
+		json_repr["algorithm"] = self.alg.id
+		return json.dumps(json_repr)
 
 	def update(self):
 		self.last_updated = time.time()
@@ -59,6 +75,8 @@ class Camera:
 		elif(tempImage.shape != self.image.shape):
 			self.image = tempImage
 		self.image = self.alg.process(self.image, self.prev_image)
+		self.path = os.path.basename(os.path.normpath(f))
+		cv2.imwrite('static/' + self.path,self.image)
 			
 
 	def set_subset(self, x, y):
@@ -76,65 +94,89 @@ class Camera:
 	def get_image_keypoints(self):
 		return cv2.drawKeypoints(self.image, self.alg.keypoints)
 
-class Algorithm:
-	def __init__(self, sensitivity=30):
-		self.name = "None"
-		self.keypoints = list()
-
-	def process(self, cur_image, prev_image=False):
-		return cv2.cvtColor(cur_image, cv2.COLOR_BGR2GRAY)
-
-class TrafficAlg(Algorithm):
-	def __init__(self, sensitivity=30):
-		self.name = "Traffic algorithm"
-		self.sensitivity = sensitivity
-		self.engine = cv2.BRISK(sensitivity)
-		self.keypoints = list()
-
-	def process(self, cur_image, prev_image=False):
-		image = cv2.equalizeHist(cv2.cvtColor(cur_image, cv2.COLOR_BGR2GRAY))
-		if(not isinstance(prev_image, np.ndarray)):
-			return image
-		last_image = cv2.equalizeHist(cv2.cvtColor(prev_image, cv2.COLOR_BGR2GRAY))
-		(ret,diff_image) = cv2.threshold(cv2.absdiff(image, last_image), 50, 255, cv2.THRESH_TOZERO)
-		self.keypoints = self.engine.detect(diff_image)
-		return diff_image
-
 class Manager():
 	def __init__(self, filename="default"):
 		self.users = dict()
 		self.cameras = dict()
-		self.algorithms = list()
+		self.maxCamId = 0
+		self.algorithms = algFac
 		self.filename=filename
-		if(filename):
-			self._loadfromfile(filename)
+		
+		self.user_db = dbm.open(filename + ".user", 'cs')
+		self.camera_db = dbm.open(filename + ".camera", 'cs')
+		
+		self._load_from_file()
 		
 	
-	def _load_from_file(filename):
-		print("STUB: Loading user data from disk")
+	def add_user(self, name):
+		if(name in self.users):
+			return 0
+		else:
+			self.users[name] = User(name)
+			self._save_to_file()
+			return 1
+	
+	def add_camera(self, cam_name, cam_url, subset=None, algorithm=None):
+		newCamera = Camera(name=cam_name, url=cam_url)
+		if(subset):
+			newCamera.set_subset(subset[0], subset[1])
+		if(algorithm):
+			newCamera.set_algorithm(self.algorithms.get_alg(algorithm))
+			
+		self.cameras[str(self.maxCamId)] = newCamera
+		self.maxCamId += 1
+		self._save_to_file()
+		return self.maxCamId - 1
+	
+	def subscribe_camera(self, user, cam):
+		self.users[user].register_camera(cam)
+		self._save_to_file()
+	
+	def _load_from_file(self):
+		key = self.camera_db.firstkey()
+		print(key)
+		while key != None:
+			if(int(key) >= self.maxCamId):
+				self.maxCamId = int(key) + 1
+			self.cameras[key] = Camera(dbm_input=json.loads(self.camera_db[key]))
+			key = self.camera_db.nextkey(key)
+			
+		key = self.user_db.firstkey()
+		while key != None:
+			self.users[key] = User(key)
+			self.users[key].add_cameras(json.loads(self.user_db[key]))
+			key = self.user_db.nextkey(key)
 
-	def _save_to_file():
-		
-
-	def _register_algs(self):
-		print ("STUB: Registering algorithms")
+	def _save_to_file(self):
+		for (key,value) in self.cameras.items():
+			self.camera_db[key] = value.get_dbm()
+			
+		for (key, value) in self.users.items():
+			self.user_db[key] = json.dumps(value.get_cameras())
+			
+	def update_cameras(self, user_id):
+		for cam_id in self.users[user_id].get_cameras():
+			camera = self.cameras[cam_id]
+			if(time.time() - camera.last_updated > camera.update_interval):
+				camera.update()
 
 	def test(self):
 		return "Testing Manager"
 
 if __name__ == "__main__":
-	user = User("Edvard")
-
-	cid1 = user.register_camera(Camera("http://weather.cs.uit.no/cam/cam_east.jpg"))
-	user.cameras[cid1].set_subset((800,1200),(500,670))
-	user.register_algorithm(cid1, TrafficAlg())
-
-	user.register_camera(Camera("http://webkamera.vegvesen.no/kamera?id=674473"))
-
-	user.update(force=True)
-	for cam in user.cameras.values():
-		cv2.namedWindow(cam.url, cv2.CV_WINDOW_AUTOSIZE)
-		cv2.imshow(cam.url, cam.get_image())
 	man = Manager()
-	man._register_algs()
+	#man.add_user("Edvard")
+	#cid = man.add_camera("Rundkjoring breivika", "http://weather.cs.uit.no/cam/cam_east.jpg", ((800,1200),(500,670)), "traffic")
+	#man.subscribe_camera("Edvard", "0")
+	print(man.cameras)
+	
+	print(man.cameras["0"].get_dbm())
+	
+	print(man.users["Edvard"].cameras)
+
+	man.update_cameras("Edvard")
+	for cam in man.users["Edvard"].cameras:
+		man.cameras[cam].update()
+		cv2.namedWindow(man.cameras[cam].url, cv2.CV_WINDOW_AUTOSIZE)
+		cv2.imshow(man.cameras[cam].url, man.cameras[cam].get_image())
 	cv2.waitKey()
