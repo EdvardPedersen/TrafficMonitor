@@ -7,7 +7,11 @@ function success(pos) {
 	document.getElementById("subscribe").innerHTML = "<a href=\"subscribe?lat=" + pos.coords.latitude + "&lon=" + pos.coords.longitude + "\"> Subscribe to cameras</a>";
 };
 
-navigator.geolocation.getCurrentPosition(success);
+function error(err) {
+	document.getElementById("subscribe").innerHTML = "<a href=\"subscribe\"> Subscribe to cameras</a>";
+};
+
+navigator.geolocation.getCurrentPosition(success, error);
 </script>
 
 <title>Traffic monitor</title>

@@ -7,8 +7,9 @@
 			<td>
 				<h2>{{ cameras[cam].name }}</h2> <br>
 				Last updated: {{ cameras[cam].updated_string }} <br>
-				Traffic: {{ cameras[cam].activity }} <br>
-				Algorithm: {{ cameras[cam].alg.name }}
+				Activity: {{ cameras[cam].activity }} <br>
+				Algorithm: {{ cameras[cam].alg.name }} <br>
+				<a href=unsubscribe?cam={{ cam }}>Unsubscribe from this camera</a>
 			</td>
 			<td><img src={{ url_for('serve_image', cam_id = cam) }}></td>
 		</tr>
@@ -16,7 +17,11 @@
 	</table>
 
 	{% for (d, i, c) in subcams %}
-		<a href=subscribe?cam={{ i }}> Subscribe to camera {{ c.name }}, {{ d }} km away </a> <br>
+		{% if d != 10000 %}
+			<a href=subscribe?cam={{ i }}> Subscribe to camera {{ c.name }}, {{ d }} km away </a> <br>
+		{% else %}
+			<a href=subscribe?cam={{ i }}> Subscribe to camera {{ c.name }} </a> <br>
+		{% endif %}
 	{% endfor %}
 
 {% endblock %}

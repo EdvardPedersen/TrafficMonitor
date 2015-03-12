@@ -6,16 +6,21 @@ from algorithm_factory import Factory as algFac
 import io
 
 def serve_web():
+	""" Web server implementation using Flask """
 	traffic = tf.Manager()
-	traffic.add_user("Testman")
 	serv = Flask(__name__)
 	
 	def before_req():
+		""" 
+			Update all cameras before every request
+			If the interval for cameras is set to 0, this adds a huge latency to requests
+		"""
 		traffic.update_all_cams()
 		return
 	
 	@serv.route('/')
 	def main_menu():
+		""" Handles the login, redirect to camera list if logged in """
 		username = request.args.get('username', '')
 		if(username != ''):
 			session['username'] = username
@@ -26,6 +31,7 @@ def serve_web():
 	
 	@serv.route('/cams')
 	def camera_list():
+		""" Shows the list of cameras, the logic is in index.html """
 		if not check_session():
 			return redirect(url_for('main_menu'))
 		cams = dict()
@@ -35,6 +41,13 @@ def serve_web():
 	
 	@serv.route('/register', methods=['POST', 'GET'])
 	def register_cam():
+		""" 
+			Register a new camera for use
+			GET returns the creation interface
+			POST adds the camera to the manager, and returns to the camera list
+		"""
+		#TODO: Improve user interface
+		#TODO: Add selection of subset
 		if not check_session():
 			return redirect(url_for('main_menu'))
 		
@@ -54,6 +67,7 @@ def serve_web():
 	
 	@serv.route('/img/<cam_id>')
 	def serve_image(cam_id):
+		""" Serves images from memory, they are already encoded as PNG """
 		if(traffic.cameras[cam_id].output_image == False):
 			return
 		(retval, img) = traffic.cameras[cam_id].output_image
@@ -63,6 +77,10 @@ def serve_web():
 	
 	@serv.route('/subscribe')
 	def subscribe_cam():
+		""" 
+			Either list the cameras that can be subscribed to (in order of distance)
+			or return to the camera list if there is data in the request
+		"""
 		if not check_session():
 			return redirect(url_for('main_menu'))
 		cam = request.args.get('cam', '')
@@ -89,6 +107,7 @@ def serve_web():
 	
 	@serv.route('/unsubscribe')
 	def unsubscribe_cam():
+		""" Unsubscribe from a camera, redirects to the camera list """
 		if not check_session():
 			return redirect(url_for('main_menu'))
 		cam = request.args.get('cam', '')
@@ -98,18 +117,23 @@ def serve_web():
 	
 	@serv.route('/logout')
 	def logout():
+		""" Logs the user out of the session, returns to login """
 		session.pop('username', None)
 		return redirect(url_for('main_menu'))
 	
 	def check_session():
+		""" Utility function to check if the user is logged in """
 		if('username' in session):
 			return True
 		return False
 	
+	# Not a very good key...
 	serv.secret_key = 'This is a secret key'
 	
+	# Register the before_req function to be called before every request
 	serv.before_request(before_req)
 
+	# Run the server
 	serv.run(debug=True, use_reloader=False)
 	
 
