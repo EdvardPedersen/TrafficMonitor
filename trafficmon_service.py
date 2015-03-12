@@ -41,8 +41,12 @@ class Camera:
 			self.name = name
 			self.url = url
 			self.alg = algFac.get_alg("none")
-			self.latitude = lat
-			self.longitude = lon
+			try:
+				self.latitude = float(lat)
+				self.longitude = float(lon)
+			except:
+				self.latitude = None
+				self.longitude = None
 
 		self.update_interval = interval
 		self.image = False
