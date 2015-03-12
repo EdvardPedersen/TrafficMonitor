@@ -7,11 +7,7 @@ function success(pos) {
 	document.getElementById("subscribe").innerHTML = "<a href=\"subscribe?lat=" + pos.coords.latitude + "&lon=" + pos.coords.longitude + "\"> Subscribe to cameras</a>";
 };
 
-function error(err) {
-	document.getElementById("subscribe").innerHTML = "<a href=\"subscribe\"> Subscribe to cameras</a>";
-};
-
-navigator.geolocation.getCurrentPosition(success, error);
+navigator.geolocation.getCurrentPosition(success);
 </script>
 
 <title>Traffic monitor</title>
@@ -20,7 +16,7 @@ navigator.geolocation.getCurrentPosition(success, error);
 		<p class="user">Logged in as {{session.username}}</p>
 		<div class="menu">
 			<a class="menu_element" href="cams">View cameras</a>
-			<a class="menu_element" id="subscribe"></a>
+			<a class="menu_element" id="subscribe" href="subscribe">Subscribe to cameras</a>
 			<a class="menu_element" href="register">Register a new camera</a>
 			<a class="menu_element" href="logout">Log out</a> <br>
 		</div>
