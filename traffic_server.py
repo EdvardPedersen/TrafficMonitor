@@ -35,18 +35,22 @@ def serve_web():
 		#	list_of_users.append(user.user_id)
 		return render_template('index.html', users=list_of_users)
 	
-	@serv.route('/register')
+	@serv.route('/register', methods=['POST', 'GET'])
 	def register_cam():
 		if not check_session():
 			return redirect(url_for('main_menu'))
 		
-		return render_template('index.html')
+		if(request.method == 'GET'):
+			return render_template('index.html')
+		else:
+			algorithm = request.form['algorithm']
+			url = request.form['url']
+			
 	
 	@serv.route('/subscribe')
 	def subscribe_cam():
 		if not check_session():
 			return redirect(url_for('main_menu'))
-		
 		return render_template('index.html')
 	
 	@serv.route('/logout')
@@ -61,7 +65,7 @@ def serve_web():
 	
 	serv.secret_key = 'This is a secret key'
 
-	serv.run(debug=True, use_reloader=False)
+	serv.run(host="0.0.0.0", port=int(80), debug=True, use_reloader=False)
 	
 
 if __name__ == "__main__":
