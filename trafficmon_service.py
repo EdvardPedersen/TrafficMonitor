@@ -65,8 +65,12 @@ class Camera:
 		self.url = dbm_repr["url"]
 		self.update_interval = dbm_repr["interval"]
 		self.alg = algFac.get_alg(dbm_repr["algorithm"])
-		self.latitude = dbm_repr["lat"]
-		self.longitude = dbm_repr["lon"]
+		try:
+			self.latitude = dbm_repr["lat"]
+			self.longitude = dbm_repr["lon"]
+		except:
+			self.latitude = None
+			self.longitude = None
 		
 	def get_distance(self, other_lat, other_lon):
 		# Taken from http://stackoverflow.com/questions/27928/how-do-i-calculate-distance-between-two-latitude-longitude-points
