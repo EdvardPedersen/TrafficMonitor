@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block body %}
+
+	<form method="POST">
+		URL of the webcam <input type="text" name="url"><br>
+
+		Algorithm to use
+		<select name=alg>
+			{% for alg in algorithms %}
+				<option value={{ alg }}>{{algorithms[alg].name}}</option>
+			{% endfor %}
+		</select> <br>
+		Description of this webcam <input type="text" name="desc"> <br>
+		Latitude of webcam <input type="text" name="lat"> <br>
+		Longitude of webcam <input type="text" name="lon"> <br>
+		<input type="submit" value="Submit">
+	</form>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+body{
+	font-family: sans-serif;
+	background: #fff;
+}
+
+.user{
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+}
+
+.menu_element{
+	background: #f00;
+	padding: 10px;
+	margin: 10px;
+}
+
+.menu{
+	background: #0ff;
+	font-size: 20px;
+	width: 50%;
+}
+
+img{
+	min-width: 50%;
+	max-width: 80%;
+}
+
+.page{
+	margin: 2em;
+}

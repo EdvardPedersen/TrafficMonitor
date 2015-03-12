@@ -1,29 +1,22 @@
-<!doctype html>
-<title>Traffic monitor</title>
+{% extends "layout.html" %}
+{% block body %}
 
-{% if session %}
+	<table class="cameraList">
+	{% for cam in cameras %}
+		<tr>
+			<td>
+				<h2>{{ cameras[cam].name }}</h2> <br>
+				Last updated: {{ cameras[cam].updated_string }} <br>
+				Traffic: {{ cameras[cam].activity }} <br>
+				Algorithm: {{ cameras[cam].alg.name }}
+			</td>
+			<td><img src={{ url_for('serve_image', cam_id = cam) }}></td>
+		</tr>
+	{% endfor %}
+	</table>
 
-Hello {{session.username}}<br>
+	{% for (d, i, c) in subcams %}
+		<a href=subscribe?cam={{ i }}> Subscribe to camera {{ c.name }}, {{ d }} km away </a> <br>
+	{% endfor %}
 
-<a href="cams">View all cameras</a>
-<a href="users">View all users</a>
-
-<a href="register">Register a new camera</a>
-<a href="subscribe">Subscribe to more cameras</a>
-<a href="logout">Log out</a> <br>
-
-{% else %}
-
-<form method="GET">
-<input type="" name="username">Please enter your name</input>
-</form>
-
-{% endif %}
-
-{% for user in users %}
-	Hello {{ user.user_id }}!
-{% endfor %}
-
-{% for cam in cameras %}
-	Camera <img src={{ url_for('static', filename = cameras[cam].path) }}>
-{% endfor %}
+{% endblock %}

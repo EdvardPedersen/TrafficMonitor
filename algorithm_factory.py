@@ -2,15 +2,15 @@ import cv2
 import numpy as np
 
 class Algorithm:
-	''' The "none" algorithm, does virtually nothing '''
+	''' The "none" algorithm, does nothing '''
 	name = "None"
-	description = "Algorithm that returns a black and white image"
+	description = "Algorithm that does nothing"
 	id = "none"
 	def __init__(self, sensitivity=30):
 		self.keypoints = list()
 
 	def process(self, cur_image, prev_image=False):
-		return cv2.cvtColor(cur_image, cv2.COLOR_BGR2GRAY)
+		return cur_image
 
 class TrafficAlg(Algorithm):
 	''' Traffic algorithm, for detecting traffic level '''
@@ -30,7 +30,7 @@ class TrafficAlg(Algorithm):
 		last_image = cv2.equalizeHist(cv2.cvtColor(prev_image, cv2.COLOR_BGR2GRAY))
 		(ret,diff_image) = cv2.threshold(cv2.absdiff(image, last_image), 50, 255, cv2.THRESH_TOZERO)
 		self.keypoints = self.engine.detect(diff_image)
-		return diff_image
+		return cv2.drawKeypoints(diff_image, self.keypoints)
 
 class Factory():
 	''' 
