@@ -66,8 +66,8 @@ class Camera:
 		self.update_interval = dbm_repr["interval"]
 		self.alg = algFac.get_alg(dbm_repr["algorithm"])
 		try:
-			self.latitude = dbm_repr["lat"]
-			self.longitude = dbm_repr["lon"]
+			self.latitude = float(dbm_repr["lat"])
+			self.longitude = float(dbm_repr["lon"])
 		except:
 			self.latitude = None
 			self.longitude = None
