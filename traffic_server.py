@@ -136,7 +136,7 @@ def serve_web():
 
 	# Run the server, open to the world, on port 80
 	# Remove the arguments to run the server only for localhost, and on port 5000
-	serv.run(host='0.0.0.0', port=80)
+	serv.run()
 	
 
 if __name__ == "__main__":

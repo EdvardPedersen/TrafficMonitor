@@ -1,4 +1,4 @@
-import pygame
+#import pygame
 import json
 import cv2
 import numpy as np
@@ -45,7 +45,7 @@ class Camera:
 		"""
 		if(dbm_input != None):
 			# Load data from dbm
-			self.init_dbm(dbm_input)
+			self._init_dbm(dbm_input)
 		else:
 			self.subset = False
 			self.name = name
@@ -68,7 +68,7 @@ class Camera:
 		self.activity = "0"
 		self.update()
 		
-	def init_dbm(self, dbm_repr):
+	def _init_dbm(self, dbm_repr):
 		""" Loads a camera from a dbm representation, used when loading from disk """
 		self.name = dbm_repr["name"]
 		self.subset = dbm_repr["subset"]
@@ -161,11 +161,11 @@ class Manager():
 	def add_user(self, name):
 		""" Add a single user to the system, saves to file if the user is new """
 		if(name in self.users):
-			return 0
+			return False
 		else:
 			self.users[name] = User(name)
 			self._save_to_file()
-			return 1
+			return True
 	
 	def add_camera(self, cam_name, cam_url, subset=None, algorithm=None, cam_lat=None, cam_lon=None):
 		""" Add a camera to the system, saves to file, note that duplicates can be added """
@@ -251,5 +251,5 @@ if __name__ == "__main__":
 	for cam in man.users["Edvard"].cameras:
 		man.cameras[cam].update()
 		cv2.namedWindow(man.cameras[cam].url, cv2.CV_WINDOW_AUTOSIZE)
-		cv2.imshow(man.cameras[cam].url, man.cameras[cam].get_image())
+		#cv2.imshow(man.cameras[cam].url, man.cameras[cam].output_image)
 	cv2.waitKey()

@@ -11,3 +11,6 @@ server:
 
 tests:
 	python tests.py
+
+original:
+	python trafficmon.py

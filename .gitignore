@@ -1,0 +1,6 @@
+report/*
+*~
+__pycache__
+*.pyc
+*.user
+*.camera
