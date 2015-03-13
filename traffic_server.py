@@ -101,7 +101,8 @@ def serve_web():
 			if(lat != '' and lon != '' and key not in comparelist):
 				sortedList.append((long(element.get_distance(lat, lon)), key, element))
 			elif(key not in comparelist):
-				sortedList.append((long(0.0), key, element))
+				# Using 10000 km as the "magic token" for "no geolocation data at one end"
+				sortedList.append((long(10000.0), key, element))
 		sortedList.sort(key=lambda element: element[0])
 		return render_template('index.html', subcams = sortedList)
 	
@@ -133,8 +134,9 @@ def serve_web():
 	# Register the before_req function to be called before every request
 	serv.before_request(before_req)
 
-	# Run the server
-	serv.run(debug=True, use_reloader=False)
+	# Run the server, open to the world, on port 80
+	# Remove the arguments to run the server only for localhost, and on port 5000
+	serv.run(host='0.0.0.0', port=80)
 	
 
 if __name__ == "__main__":
